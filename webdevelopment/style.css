@@ -1,11 +1,106 @@
-h1 {
-  color: #00e6ac;
-  font-size: 40px;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Roboto&display=swap');
+
+body {
+  background-color: #193367;
+  margin: 0;
+  font-family: Roboto, sans-serif;
+  color: #d9d9d9;
+}
+
+h1, h2, h3 {
   font-family: Poppins, sans-serif;
+  color: #00e6ac;
 }
 
 p {
   color: #d9d9d9;
   font-size: 18px;
   font-family: Roboto, sans-serif;
+}
+
+header {
+  background-color: #193367;
+  text-align: center;
+  padding: 20px;
+}
+
+nav {
+  display: flex;
+  justify-content: space-around;
+  background-color: #193367;
+  border-top: 3px solid #00e6ac;
+  border-bottom: 3px solid #00e6ac;
+  padding: 12px 0;
+}
+
+nav a {
+  color: #d9d9d9;
+  text-decoration: none;
+  font-family: Poppins, sans-serif;
+  font-size: 25px;
+}
+
+nav a:hover {
+  color: #00e6ac;
+}
+
+.herotitle {
+  text-align: center;
+  font-family: Poppins, sans-serif;
+}
+
+.herotitle h1 {
+  color: #d9d9d9;
+  display: inline-block;
+  border-bottom: 3px solid #00e6ac;
+}
+
+.hero {
+  background-color: #132a55;
+  padding: 25px 25px;
+}
+
+.herobutton {
+  display: inline-block;
+  background-color: #00e6ac;
+  color: #193367;
+  padding: 10px 20px;
+  text-decoration: none;
+  font-family: Poppins, sans-serif;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.herobutton:hover {
+  background-color: #d9d9d9;
+}
+
+
+.hero h1 {
+  font-size: 20px;
+  color: #00e6ac;
+  font-family: Poppins, sans-serif;
+  margin-bottom: 2px;
+}
+
+.hero h2 {
+  color: #d9d9d9;
+  font-size: 30px;
+  margin-top: 1px;
+}
+
+.hero p {
+  color: #d9d9d9;
+  font-size: 18px;
+  margin-bottom: 1px;
+}
+
+main {
+  padding: 40px 48px;
+}
+
+footer {
+  background-color: #132a55;
+  text-align: left;
+  padding: 15px;
 }
