@@ -95,16 +95,6 @@ nav a:hover {
   margin-bottom: 1px;
 }
 
-main {
-  padding: 40px 48px;
-}
-
-footer {
-  background-color: #132a55;
-  text-align: left;
-  padding: 15px;
-}
-
 .resumelink {
   display: inline-block;
   padding: 12px 20px;
@@ -119,4 +109,15 @@ footer {
 .resumelink:hover {
   background-color: #00c999;
 }
+
+main {
+  padding: 40px 48px;
+}
+
+footer {
+  background-color: #132a55;
+  text-align: left;
+  padding: 15px;
+}
+
 
