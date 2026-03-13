@@ -1,21 +1,14 @@
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
-  type        = string
-}
+buckets = {
+  logs = {
+    bucket_name = "company-logs-001"
 
-variable "kms_key_arn" {
-  description = "KMS key ARN used for encryption"
-  type        = string
-}
+    kms_key_arn = "arn:aws:kms:us-east-2:123456789012:key/abcd1234-abcd-1234-abcd-123456789abc"
 
-variable "versioning" {
-  description = "Enable versioning on the bucket"
-  type        = bool
-  default     = true
-}
+    versioning = true
 
-variable "tags" {
-  description = "Tags applied to the bucket"
-  type        = map(string)
-  default     = {}
+    tags = {
+      Environment = "Prod"
+      Owner       = "DevOps"
+    }
+  }
 }
