@@ -5,10 +5,12 @@ header {
   padding: 15px 30px;
   background-color: #193367;
   gap: 40px;
+  border-radius: 12px;
 }
 
 header img {
-  height: 50px;
+  height: 60px;
+  border-radius: 12px;
 }
 
 nav ul {
