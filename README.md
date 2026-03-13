@@ -1,4 +1,3 @@
-
 variable "buckets" {
   description = "Map of S3 buckets to create"
 
