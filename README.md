@@ -1,21 +1,34 @@
-resource "aws_s3_bucket" "this" {
-  bucket = var.bucket_name
-  acl    = var.acl
+variable "bucket_name" {
+  description = "Name of the S3 bucket"
+  type        = string
+}
 
-  versioning {
-    enabled = var.versioning
-  }
+variable "acl" {
+  description = "Canned ACL for the bucket"
+  type        = string
+  default     = "private"
+}
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = var.sse_algorithm
-      }
-    }
-  }
+variable "versioning" {
+  description = "Enable versioning on the bucket"
+  type        = bool
+  default     = true
+}
 
-  tags = var.tags
+variable "sse_algorithm" {
+  description = "Server-side encryption algorithm"
+  type        = string
+  default     = "AES256"
+}
 
-  # Optional: ensure bucket is destroyed if module is destroyed
-  force_destroy = var.force_destroy
+variable "tags" {
+  description = "Tags to apply to the bucket"
+  type        = map(string)
+  default     = {}
+}
+
+variable "force_destroy" {
+  description = "Destroy bucket even if it contains objects"
+  type        = bool
+  default     = false
 }
