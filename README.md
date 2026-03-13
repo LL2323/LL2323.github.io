@@ -1,22 +1,21 @@
-# Windows server module
-module "windows_server" {
-  source = "./modules/windows_server"
-  count  = var.create_server ? 1 : 0
+resource "aws_s3_bucket" "this" {
+  bucket = var.bucket_name
+  acl    = var.acl
 
-  # Pass server variables
-  servers = var.servers
-  key_name = var.key_name
-}
+  versioning {
+    enabled = var.versioning
+  }
 
-# S3 bucket module
-module "app_logs_bucket" {
-  source = "./modules/s3_bucket"
-  count  = var.create_s3_bucket ? 1 : 0
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = var.sse_algorithm
+      }
+    }
+  }
 
-  # Pass S3 variables
-  bucket_name    = var.bucket_name
-  acl            = var.acl
-  versioning     = var.versioning
-  sse_algorithm  = var.sse_algorithm
-  tags           = var.tags
+  tags = var.tags
+
+  # Optional: ensure bucket is destroyed if module is destroyed
+  force_destroy = var.force_destroy
 }
