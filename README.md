@@ -1,43 +1,21 @@
-resource "aws_s3_bucket" "bucket" {
-  bucket = var.bucket_name
-
-  tags = var.tags
+variable "bucket_name" {
+  description = "Name of the S3 bucket"
+  type        = string
 }
 
-resource "aws_s3_bucket_ownership_controls" "ownership" {
-  bucket = aws_s3_bucket.bucket.id
-
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
+variable "kms_key_arn" {
+  description = "KMS key ARN used for encryption"
+  type        = string
 }
 
-resource "aws_s3_bucket_public_access_block" "public_access" {
-  bucket = aws_s3_bucket.bucket.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+variable "versioning" {
+  description = "Enable versioning on the bucket"
+  type        = bool
+  default     = true
 }
 
-resource "aws_s3_bucket_versioning" "versioning" {
-  bucket = aws_s3_bucket.bucket.id
-
-  versioning_configuration {
-    status = var.versioning ? "Enabled" : "Suspended"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
-  bucket = aws_s3_bucket.bucket.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm     = "aws:kms"
-      kms_master_key_id = var.kms_key_arn
-    }
-
-    bucket_key_enabled = true
-  }
+variable "tags" {
+  description = "Tags applied to the bucket"
+  type        = map(string)
+  default     = {}
 }
