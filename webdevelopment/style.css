@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Roboto&display=swap');
+
+body {
+  background-color: #193367;
+  margin: 0;
+  font-family: Roboto, sans-serif;
+  color: #d9d9d9;
+}
+
+h1, h2, h3 {
+  font-family: Poppins, sans-serif;
+  color: #00e6ac;
+}
+
+p {
+  color: #d9d9d9;
+  font-size: 18px;
+  font-family: Roboto, sans-serif;
+}
+
+.site-header {
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  align-items: center;
+  background-color: #193367;
+  padding: 20px;
+}
+
+.logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  justify-self: start;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 32px;
+  justify-self: center;
+}
+
+.herotitle {
+  text-align: center;
+  font-family: Poppins, sans-serif;
+}
+
+.herotitle h1 {
+  color: #d9d9d9;
+  display: inline-block;
+  border-bottom: 3px solid #00e6ac;
+}
+
+.hero {
+  padding: 25px 25px;
+}
+
+.reflection-box {
+  background-color: #132a55;
+  padding: 25px;
+  border: 3px solid #00e6ac;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+#reflection-page .reflection-box p:first-of-type::first-letter {
+  font-size: 40px;
+  font-weight: bold;
+  color: #00e6ac;
+}
+
+#reflection-page .reflection-box p:not(:first-of-type) {
+  text-indent: 40px;
+}
+
+.herobutton {
+  display: inline-block;
+  background-color: #00e6ac;
+  color: #193367;
+  padding: 10px 20px;
+  text-decoration: none;
+  font-family: Poppins, sans-serif;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.herobutton:hover {
+  background-color: #d9d9d9;
+}
+
+main {
+  padding: 40px 48px;
+}
+
+footer {
+  background-color: #132a55;
+  text-align: center;
+  padding: 20px;
+  border-top: 3px solid #00e6ac;
+  margin-top: 40px;
+}
+
+@media print {
+
+  @page {
+    margin: 1in;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-family: serif !important;
+  }
+
+  .site-header,
+  .hero,
+  .herobutton,
+  .reflection-box,
+  img,
+  video,
+  nav,
+  .navbar {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  h1, h2, h3, p, li, footer {
+    color: black !important;
+  }
+
+  h1 {
+  display: block !important;
+}
+
+  p, li {
+    font-size: 12pt;
+  }
+
+  footer {
+    border: none !important;
+    background: none !important;
+    margin-top: 20px;
+  }
+}
