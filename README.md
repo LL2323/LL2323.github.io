@@ -22,7 +22,8 @@ and per-datastore detail sections.
 [CmdletBinding()]
 param(
     [string]$VCenterServer,
-    [string]$OutputPath
+    [string]$OutputPath,
+    [switch]$SkipFileInventory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,6 +51,117 @@ function Escape-Html {
 
     if ($null -eq $Text) { return '' }
     return [System.Net.WebUtility]::HtmlEncode([string]$Text)
+}
+
+function Get-FilePropertySummary {
+    param([object]$FileObject)
+
+    $ignoredProperties = @('DynamicType', 'DynamicProperty', 'Path', 'FileSize', 'Modification', 'Owner')
+    $pairs = foreach ($property in $FileObject.PSObject.Properties) {
+        if ($ignoredProperties -contains $property.Name) { continue }
+        if ($null -eq $property.Value) { continue }
+
+        $valueText = if ($property.Value -is [System.Array]) {
+            ($property.Value | ForEach-Object { [string]$_ }) -join ', '
+        } else {
+            [string]$property.Value
+        }
+
+        if ([string]::IsNullOrWhiteSpace($valueText)) { continue }
+        '{0}={1}' -f $property.Name, $valueText
+    }
+
+    $pairs = @($pairs)
+    if ($pairs.Count -eq 0) { return 'None' }
+    return ($pairs -join '; ')
+}
+
+function Get-DatastoreFileInventory {
+    param([Parameter(Mandatory)][object]$Datastore)
+
+    $inventory = [ordered]@{
+        FileCount            = 0
+        FolderCount          = 0
+        TotalFileSizeBytes   = 0
+        LargestFilePath      = 'N/A'
+        LargestFileSizeBytes = 0
+        Files                = @()
+        Error                = $null
+    }
+
+    try {
+        if (-not $Datastore.ExtensionData -or -not $Datastore.ExtensionData.Browser) {
+            throw 'Datastore browser is not available for this datastore.'
+        }
+
+        $browser = Get-View -Id $Datastore.ExtensionData.Browser -ErrorAction Stop
+
+        $searchSpec = New-Object VMware.Vim.HostDatastoreBrowserSearchSpec
+        $searchSpec.SortFoldersFirst = $true
+        $searchSpec.MatchPattern = @('*')
+        $searchSpec.Details = New-Object VMware.Vim.FileQueryFlags
+        $searchSpec.Details.FileType = $true
+        $searchSpec.Details.FileSize = $true
+        $searchSpec.Details.Modification = $true
+        $searchSpec.Details.FileOwner = $true
+
+        $taskMoRef = $browser.SearchDatastoreSubFolders_Task("[$($Datastore.Name)]", $searchSpec)
+
+        do {
+            Start-Sleep -Milliseconds 250
+            $taskView = Get-View -Id $taskMoRef -ErrorAction Stop
+        } while ($taskView.Info.State -eq 'running' -or $taskView.Info.State -eq 'queued')
+
+        if ($taskView.Info.State -ne 'success') {
+            $taskError = if ($taskView.Info.Error -and $taskView.Info.Error.LocalizedMessage) {
+                $taskView.Info.Error.LocalizedMessage
+            } else {
+                'Datastore browse task failed.'
+            }
+            throw $taskError
+        }
+
+        $searchResults = @($taskView.Info.Result)
+        $inventory.FolderCount = @($searchResults | Where-Object { $_.FolderPath }).Count
+
+        $files = foreach ($folderResult in $searchResults) {
+            $folderPath = if ($folderResult.FolderPath) { $folderResult.FolderPath } else { "[$($Datastore.Name)]" }
+
+            foreach ($entry in @($folderResult.File)) {
+                $fileSizeBytes = if ($null -ne $entry.FileSize) { [double]$entry.FileSize } else { 0 }
+                $fullPath = if ($entry.Path) { "$folderPath$($entry.Path)" } else { $folderPath }
+                $fileType = $entry.GetType().Name
+
+                if ($fileType -ne 'FolderFileInfo') {
+                    $inventory.FileCount++
+                    $inventory.TotalFileSizeBytes += $fileSizeBytes
+
+                    if ($fileSizeBytes -gt $inventory.LargestFileSizeBytes) {
+                        $inventory.LargestFileSizeBytes = $fileSizeBytes
+                        $inventory.LargestFilePath = $fullPath
+                    }
+                }
+
+                [PSCustomObject]@{
+                    Name         = if ($entry.Path) { $entry.Path } else { $folderPath }
+                    FullPath     = $fullPath
+                    FolderPath   = $folderPath
+                    FileType     = $fileType
+                    SizeBytes    = if ($fileType -eq 'FolderFileInfo') { $null } else { $fileSizeBytes }
+                    SizeReadable = if ($fileType -eq 'FolderFileInfo') { 'Folder' } else { Convert-ToHumanSize $fileSizeBytes }
+                    Modified     = if ($entry.Modification) { $entry.Modification } else { 'N/A' }
+                    Owner        = if ($entry.Owner) { $entry.Owner } else { 'N/A' }
+                    Details      = Get-FilePropertySummary -FileObject $entry
+                }
+            }
+        }
+
+        $inventory.Files = @($files)
+    } catch {
+        $inventory.Error = $_.Exception.Message
+    }
+
+    return [PSCustomObject]$inventory
 }
 
 $scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
@@ -145,6 +257,8 @@ try {
         }
     }
 
+    $fileInventoryByDatastoreId = @{}
+
     $rows = foreach ($datastore in $datastores) {
         Write-Host ("Processing datastore: {0}" -f $datastore.Name) -ForegroundColor DarkGray
 
@@ -221,6 +335,23 @@ try {
             $remotePath = $summary.Url
         }
 
+        $fileInventory = [PSCustomObject]@{
+            FileCount            = 0
+            FolderCount          = 0
+            TotalFileSizeBytes   = 0
+            LargestFilePath      = 'N/A'
+            LargestFileSizeBytes = 0
+            Files                = @()
+            Error                = if ($SkipFileInventory) { 'Skipped by parameter' } else { $null }
+        }
+
+        if (-not $SkipFileInventory) {
+            Write-Host ("Enumerating datastore contents: {0}" -f $datastore.Name) -ForegroundColor DarkCyan
+            $fileInventory = Get-DatastoreFileInventory -Datastore $datastore
+        }
+
+        $fileInventoryByDatastoreId[$dsMoRef] = $fileInventory
+
         $triggeredAlarmNames = @()
         if ($view.TriggeredAlarmState) {
             $triggeredAlarmNames = @($view.TriggeredAlarmState | ForEach-Object {
@@ -259,6 +390,7 @@ try {
         }
 
         [PSCustomObject]@{
+            DatastoreId         = $dsMoRef
             Name                = $datastore.Name
             Datacenter          = $datacenterName
             DatastoreCluster    = $datastoreCluster
@@ -278,6 +410,12 @@ try {
             TemplateCount       = $templateCount
             HostCount           = $hostNames.Count
             Hosts               = Join-Text $hostNames
+            FileCount           = $fileInventory.FileCount
+            FolderCount         = $fileInventory.FolderCount
+            TotalFileSizeGB     = [Math]::Round(($fileInventory.TotalFileSizeBytes / 1GB), 2)
+            LargestFile         = $fileInventory.LargestFilePath
+            LargestFileSizeGB   = [Math]::Round(($fileInventory.LargestFileSizeBytes / 1GB), 2)
+            FileInventoryStatus = if ($SkipFileInventory) { 'Skipped' } elseif ($fileInventory.Error) { "Error: $($fileInventory.Error)" } else { 'Collected' }
             ClusterCount        = $clusterNames.Count
             Clusters            = Join-Text $clusterNames
             Url                 = $summary.Url
@@ -310,6 +448,9 @@ try {
     $inaccessibleCount = @($rows | Where-Object { $_.Accessible -ne $true }).Count
     $maintenanceCount = @($rows | Where-Object { $_.MaintenanceMode -and $_.MaintenanceMode -ne 'normal' }).Count
     $lowFreeCount = @($rows | Where-Object { $_.PercentFree -lt 20 }).Count
+    $totalFileCount = [int](($rows | Measure-Object -Property FileCount -Sum).Sum)
+    $totalFolderCount = [int](($rows | Measure-Object -Property FolderCount -Sum).Sum)
+    $totalEnumeratedFileSizeGB = [double](($rows | Measure-Object -Property TotalFileSizeGB -Sum).Sum)
 
     $typeSummary = $rows |
         Group-Object -Property Type |
@@ -328,14 +469,18 @@ try {
         $_.PercentFree -lt 20 -or $_.Accessible -ne $true -or ($_.MaintenanceMode -and $_.MaintenanceMode -ne 'normal')
     } | Sort-Object PercentFree, Name)
 
-    $summaryCards = @(
+    $summaryCardList = @(
         "<div class='card'><div class='label'>Total Datastores</div><div class='value'>$($rows.Count)</div></div>",
         "<div class='card'><div class='label'>Total Capacity</div><div class='value'>$(Convert-ToHumanSize ($totalCapacityGB * 1GB))</div></div>",
         "<div class='card'><div class='label'>Total Free Space</div><div class='value'>$(Convert-ToHumanSize ($totalFreeGB * 1GB))</div></div>",
         "<div class='card'><div class='label'>Average Free %</div><div class='value'>$avgFreePercent%</div></div>",
+        "<div class='card'><div class='label'>Enumerated Files</div><div class='value'>$totalFileCount</div></div>",
+        "<div class='card'><div class='label'>Enumerated Folders</div><div class='value'>$totalFolderCount</div></div>",
+        "<div class='card'><div class='label'>File Inventory Size</div><div class='value'>$(Convert-ToHumanSize ($totalEnumeratedFileSizeGB * 1GB))</div></div>",
         "<div class='card warn'><div class='label'>Below 20% Free</div><div class='value'>$lowFreeCount</div></div>",
         "<div class='card warn'><div class='label'>Inaccessible / Maintenance</div><div class='value'>$($inaccessibleCount + $maintenanceCount)</div></div>"
-    ) -join "`n"
+    )
+    $summaryCards = $summaryCardList -join "`n"
 
     $typeRowsHtml = foreach ($typeRow in $typeSummary) {
         "<tr><td>$(Escape-Html $typeRow.Type)</td><td>$($typeRow.Count)</td><td>$($typeRow.CapacityTB)</td><td>$($typeRow.FreeTB)</td><td>$($typeRow.AvgFreePct)%</td></tr>"
@@ -372,6 +517,9 @@ try {
     <td>$($row.VMCount)</td>
     <td>$($row.TemplateCount)</td>
     <td>$($row.HostCount)</td>
+    <td>$($row.FileCount)</td>
+    <td>$($row.FolderCount)</td>
+    <td>$(Escape-Html $row.FileInventoryStatus)</td>
     <td>$(Escape-Html $row.OverallStatus)</td>
     <td>$($row.AlarmCount)</td>
 </tr>
@@ -398,6 +546,12 @@ try {
             'Template Count'       = $row.TemplateCount
             'Host Count'           = $row.HostCount
             'Hosts'                = $row.Hosts
+            'Enumerated Files'     = $row.FileCount
+            'Enumerated Folders'   = $row.FolderCount
+            'Enumerated File Size (GB)' = $row.TotalFileSizeGB
+            'Largest File'         = $row.LargestFile
+            'Largest File Size (GB)' = $row.LargestFileSizeGB
+            'File Inventory Status' = $row.FileInventoryStatus
             'Cluster Count'        = $row.ClusterCount
             'Clusters'             = $row.Clusters
             'Datastore URL'        = $row.Url
@@ -431,6 +585,77 @@ try {
     </div>
 </details>
 "@
+    }
+
+    $fileInventoryRowsHtml = foreach ($row in ($rows | Sort-Object Name)) {
+        "<tr><td>$(Escape-Html $row.Name)</td><td>$($row.FileCount)</td><td>$($row.FolderCount)</td><td>$($row.TotalFileSizeGB)</td><td class='wrap'>$(Escape-Html $row.LargestFile)</td><td>$($row.LargestFileSizeGB)</td><td>$(Escape-Html $row.FileInventoryStatus)</td></tr>"
+    }
+    if (-not $fileInventoryRowsHtml) {
+        $fileInventoryRowsHtml = "<tr><td colspan='7'>No file inventory data available.</td></tr>"
+    }
+
+    if ($SkipFileInventory) {
+        $fileDetailsHtml = "<p class='muted'>File inventory was skipped because <code>-SkipFileInventory</code> was used.</p>"
+    } else {
+        $fileDetailsHtml = foreach ($row in ($rows | Sort-Object Name)) {
+            $inventory = $null
+            if ($fileInventoryByDatastoreId.ContainsKey($row.DatastoreId)) {
+                $inventory = $fileInventoryByDatastoreId[$row.DatastoreId]
+            }
+
+            if (-not $inventory) {
+                @"
+<details class='detail-card'>
+    <summary>$(Escape-Html $row.Name) file inventory</summary>
+    <div class='detail-body'>No file inventory data was stored for this datastore.</div>
+</details>
+"@
+                continue
+            }
+
+            if ($inventory.Error) {
+                @"
+<details class='detail-card'>
+    <summary>$(Escape-Html $row.Name) file inventory <span class='muted'>| unable to enumerate</span></summary>
+    <div class='detail-body'>$(Escape-Html $inventory.Error)</div>
+</details>
+"@
+                continue
+            }
+
+            $fileRows = foreach ($fileItem in ($inventory.Files | Sort-Object FullPath)) {
+                "<tr><td class='wrap'>$(Escape-Html $fileItem.FullPath)</td><td>$(Escape-Html $fileItem.FileType)</td><td>$($fileItem.SizeReadable)</td><td>$(Escape-Html $fileItem.Modified)</td><td>$(Escape-Html $fileItem.Owner)</td><td class='wrap'>$(Escape-Html $fileItem.Details)</td></tr>"
+            }
+
+            if (-not $fileRows) {
+                $fileRows = "<tr><td colspan='6'>No files were returned for this datastore.</td></tr>"
+            }
+
+            @"
+<details class='detail-card'>
+    <summary>$(Escape-Html $row.Name) file inventory <span class='muted'>| $($row.FileCount) files | $($row.FolderCount) folders | $($row.TotalFileSizeGB) GB enumerated</span></summary>
+    <div class='detail-body'>
+        <div class='table-wrap'>
+            <table class='small'>
+                <thead>
+                    <tr>
+                        <th>Full Path</th>
+                        <th>File Type</th>
+                        <th>Size</th>
+                        <th>Modified</th>
+                        <th>Owner</th>
+                        <th>Available Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    $($fileRows -join "`n")
+                </tbody>
+            </table>
+        </div>
+    </div>
+</details>
+"@
+        }
     }
 
     $html = @"
@@ -550,6 +775,13 @@ try {
             color: #6b7280;
             font-weight: 400;
         }
+        .small {
+            font-size: 12px;
+        }
+        .wrap {
+            white-space: normal;
+            word-break: break-word;
+        }
         .footer {
             margin-top: 20px;
             color: #6b7280;
@@ -629,6 +861,9 @@ try {
                             <th>VMs</th>
                             <th>Templates</th>
                             <th>Hosts</th>
+                            <th>Files</th>
+                            <th>Folders</th>
+                            <th>File Inventory</th>
                             <th>Overall Status</th>
                             <th>Alarm Count</th>
                         </tr>
@@ -643,6 +878,33 @@ try {
         <div class='section'>
             <h2>Detailed Datastore Sections</h2>
             $($detailsHtml -join "`n")
+        </div>
+
+        <div class='section'>
+            <h2>Datastore File Inventory Summary</h2>
+            <div class='table-wrap'>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datastore</th>
+                            <th>Files</th>
+                            <th>Folders</th>
+                            <th>Total Enumerated Size (GB)</th>
+                            <th>Largest File</th>
+                            <th>Largest File Size (GB)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        $($fileInventoryRowsHtml -join "`n")
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class='section'>
+            <h2>File-Level Inventory by Datastore</h2>
+            $($fileDetailsHtml -join "`n")
         </div>
 
         <div class='footer'>
