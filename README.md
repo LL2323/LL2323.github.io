@@ -40,7 +40,7 @@ function Convert-ToHumanSize {
 function Join-Text {
     param([object[]]$Values)
 
-    $clean = @($Values | Where-Object { $_ -and "$_.Trim()" -ne '' } | Sort-Object -Unique)
+    $clean = @($Values | Where-Object { $null -ne $_ -and ([string]$_).Trim() -ne '' } | Sort-Object -Unique)
     if ($clean.Count -eq 0) { return 'N/A' }
     return ($clean -join ', ')
 }
@@ -104,25 +104,45 @@ try {
     }
 
     # Pull related inventory once for faster correlation.
+    # Use the higher-level cmdlets for cluster/datastore-cluster/alarm metadata because
+    # some PowerCLI versions reject StoragePod and Alarm when passed to Get-View -ViewType.
     $vmViews = @(Get-View -ViewType VirtualMachine -Property Name,Config.Template,Datastore -ErrorAction SilentlyContinue)
     $hostViews = @(Get-View -ViewType HostSystem -Property Name,Parent,Datastore -ErrorAction SilentlyContinue)
-    $clusterViews = @(Get-View -ViewType ClusterComputeResource -Property Name -ErrorAction SilentlyContinue)
-    $storagePodViews = @(Get-View -ViewType StoragePod -Property Name -ErrorAction SilentlyContinue)
-    $alarmViews = @(Get-View -ViewType Alarm -Property Info.Name -ErrorAction SilentlyContinue)
+    $clusters = @(Get-Cluster -ErrorAction SilentlyContinue)
+    $datastoreClusters = @(Get-DatastoreCluster -ErrorAction SilentlyContinue)
+
+    $alarmDefinitions = @()
+    try {
+        $alarmDefinitions = @(Get-AlarmDefinition -ErrorAction SilentlyContinue)
+    } catch {
+        $alarmDefinitions = @()
+    }
 
     $clusterNameById = @{}
-    foreach ($clusterView in $clusterViews) {
-        $clusterNameById[$clusterView.MoRef.Value] = $clusterView.Name
+    foreach ($cluster in $clusters) {
+        if ($cluster.ExtensionData -and $cluster.ExtensionData.MoRef) {
+            $clusterNameById[$cluster.ExtensionData.MoRef.Value] = $cluster.Name
+        }
     }
 
     $storagePodNameById = @{}
-    foreach ($storagePodView in $storagePodViews) {
-        $storagePodNameById[$storagePodView.MoRef.Value] = $storagePodView.Name
+    foreach ($datastoreCluster in $datastoreClusters) {
+        if ($datastoreCluster.ExtensionData -and $datastoreCluster.ExtensionData.MoRef) {
+            $storagePodNameById[$datastoreCluster.ExtensionData.MoRef.Value] = $datastoreCluster.Name
+        }
     }
 
     $alarmNameById = @{}
-    foreach ($alarmView in $alarmViews) {
-        $alarmNameById[$alarmView.MoRef.Value] = $alarmView.Info.Name
+    foreach ($alarmDefinition in $alarmDefinitions) {
+        if ($alarmDefinition.ExtensionData -and $alarmDefinition.ExtensionData.MoRef) {
+            $alarmKey = $alarmDefinition.ExtensionData.MoRef.Value
+            $alarmValue = if ($alarmDefinition.ExtensionData.Info -and $alarmDefinition.ExtensionData.Info.Name) {
+                $alarmDefinition.ExtensionData.Info.Name
+            } else {
+                $alarmDefinition.Name
+            }
+            $alarmNameById[$alarmKey] = $alarmValue
+        }
     }
 
     $rows = foreach ($datastore in $datastores) {
@@ -643,4 +663,3 @@ finally {
         Disconnect-VIServer -Server $connection -Confirm:$false | Out-Null
     }
 }
-
