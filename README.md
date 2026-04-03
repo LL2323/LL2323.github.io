@@ -587,7 +587,7 @@ try {
 "@
     }
 
-    $fileInventoryRowsHtml = foreach ($row in ($rows | Sort-Object Name)) {
+    $fileInventoryRowsHtml = foreach ($row in ($rows | Sort-Object @{ Expression = { $_.TotalFileSizeGB } ; Descending = $true }, Name)) {
         "<tr><td>$(Escape-Html $row.Name)</td><td>$($row.FileCount)</td><td>$($row.FolderCount)</td><td>$($row.TotalFileSizeGB)</td><td class='wrap'>$(Escape-Html $row.LargestFile)</td><td>$($row.LargestFileSizeGB)</td><td>$(Escape-Html $row.FileInventoryStatus)</td></tr>"
     }
     if (-not $fileInventoryRowsHtml) {
@@ -623,7 +623,7 @@ try {
                 continue
             }
 
-            $fileRows = foreach ($fileItem in ($inventory.Files | Sort-Object FullPath)) {
+            $fileRows = foreach ($fileItem in ($inventory.Files | Sort-Object @{ Expression = { if ($null -ne $_.SizeBytes) { [double]$_.SizeBytes } else { -1 } } ; Descending = $true }, FullPath)) {
                 "<tr><td class='wrap'>$(Escape-Html $fileItem.FullPath)</td><td>$(Escape-Html $fileItem.FileType)</td><td>$($fileItem.SizeReadable)</td><td>$(Escape-Html $fileItem.Modified)</td><td>$(Escape-Html $fileItem.Owner)</td><td class='wrap'>$(Escape-Html $fileItem.Details)</td></tr>"
             }
 
