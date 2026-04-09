@@ -2,7 +2,7 @@
 <html lang="en">
 <!--
   Name: Landen Lipskoch
-  Date: 3/15/2026
+  Date: 4/9/2026
   Course: IS_LT-4355-7355_2026SP_WEB_DESIGN_DEV
   Description: About page
 -->
@@ -10,11 +10,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About - Landen Lipskoch</title>
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="nav.css">
 </head>
 
-<body>
+<body class="about-page">
   <header class="site-header">
     <img src="logo.png" alt="Landen Lipskoch Logo" class="logo">
     <h1>Landen Lipskoch.com</h1>
@@ -47,47 +48,56 @@
     <h1>About Me</h1>
   </section>
 
-  <main>
-    <div class="reflection-box">
-      <h3>Who I Am</h3>
-      <p>My name is Landen Lipskoch, and I am an Information Technology student with hands-on experience in networking, servers, and systems administration. I have earned an Associate’s degree in Information Technology from Linn State Technical College of Missouri in 2023, and I hold CCNA and FOA certifications. Throughout my education and IT career, I have worked on projects involving network installations, CAT/Fiber cabling, IoT devices, and the building and maintenance of physical, virtual, and cloud servers. My key areas of expertise include layer 1–3 network configuration, hardware and software troubleshooting, Windows Server, Cisco CLI, and general IT support across diverse environments.</p>
-    </div>
+  <main class="about-grid">
+    <section class="about-card overview-card">
+      <h2>About Me and Education Overview</h2>
+      <div class="overview-layout">
+        <div class="overview-text">
+          <p>My name is Landen Lipskoch, and I am an Information Technology student with hands-on experience in networking, servers, and systems administration. I earned an Associate of Applied Science in Information Technology from State Technical College of Missouri in 2023 and hold CCNA and FOA CFOT certifications.</p>
+          <p>My background includes network installation, CAT and fiber cabling, IoT support, and maintaining physical, virtual, and cloud servers. I am especially interested in systems administration, infrastructure, and technical support.</p>
 
-    <figure>
-      <img src="media/aboutpng.png" 
-           alt="LL About PNG" 
-           class="about-photo">
-      <figcaption>My about PNG</figcaption>
-    </figure>
+          <h3>Technical Strengths</h3>
+          <ul class="skills-list">
+            <li>Networking configuration and troubleshooting (Layer 1–3)</li>
+            <li>Windows Server administration</li>
+            <li>Hardware and software support</li>
+            <li>Cloud platforms including AWS and Azure</li>
+          </ul>
+        </div>
 
-    <figure>
-      <video controls width="400" class="about-video">
+        <figure class="overview-image">
+          <img src="media/aboutpng.png"
+               alt="Graphic introducing Landen Lipskoch"
+               class="about-photo">
+        </figure>
+      </div>
+    </section>
+
+    <section class="about-card video-card">
+      <h2>Resume Video</h2>
+      <video controls class="about-video">
         <source src="media/aboutmp4.mp4" type="video/mp4">
         Your browser does not support the video tag.
       </video>
-      <figcaption>My about MP4</figcaption>
-    </figure>
+    </section>
 
-    <h3>Education</h3>
-    <p>Associate of Applied Science in Information Technology — State Technical College of Missouri (2023).</p>
-    <p>Certifications: CCNA, FOA CFOT.</p>
-
-    <h3>Skills</h3>
-    <ul>
-      <li>Networking Configuration (Layer 1–3)</li>
-      <li>Windows Server Administration</li>
-      <li>Hardware and Software Troubleshooting</li>
-      <li>Cloud Servers (AWS and Azure)</li>
-    </ul>
-
-    <h3>Career Goals</h3>
-    <p>I aim to continue developing my skills in systems administration, networking, and cloud computing while growing professionally. Long-term, I hope to take on senior roles such as IT Infrastructure Engineer or Systems Administrator, where I can lead projects, implement solutions, and mentor others. I am committed to continuous learning and staying current with evolving technologies.</p>
-
-    <a href="webcontent/Lipskochresume.pdf" class="herobutton" target="_blank">Download My Resume</a>
+    <section class="about-card resume-card">
+      <h2>Resume</h2>
+      <p>I am building toward a career in networking, cloud computing, and systems administration. My resume highlights my education, certifications, and hands-on technical experience.</p>
+      <a href="webcontent/Lipskochresume.pdf" class="herobutton resume-link" target="_blank" rel="noopener">Download My Resume</a>
+    </section>
   </main>
 
   <footer>
-    <p>Landen Lipskoch 3/15/2026 - LLDTR@missouri.edu</p>
+    <p class="contact-item">
+      <img src="images/phone.png" alt="Phone icon" class="icon">
+      555-123-4567
+    </p>
+    <p class="contact-item">
+      <img src="images/email.png" alt="Email icon" class="icon">
+      LLDTR@missouri.edu
+    </p>
+    <p>Landen Lipskoch 4/9/2026</p>
   </footer>
 </body>
 </html>
