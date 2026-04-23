@@ -1,4 +1,3 @@
-
 # Windows Update - pass 1 (main patching)
 provisioner "windows-update" {
   pause_before    = "30s"
