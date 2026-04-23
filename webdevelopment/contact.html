@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  Name: Landen Lipskoch
+  Date: 4/19/2026
+  Course: IS_LT-4355-7355_2026SP_WEB_DESIGN_DEV
+  Description: Contact page
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - Landen Lipskoch</title>
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="nav.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <img src="logo.png" alt="Landen Lipskoch Logo" class="logo">
+    <h1>Landen Lipskoch.com</h1>
+  </header>
+
+  <nav class="navbar">
+    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+    <label for="menu-toggle" class="hamburger">&#9776;</label>
+    <ul class="nav-menu">
+      <li><a href="index.html">Home</a></li>
+      <li class="dropdown">
+        <a href="about.html">About</a>
+        <ul class="dropdown-menu">
+          <li><a href="about.html#education">About Me & Education</a></li>
+          <li><a href="about.html#resume-video">Resume Video</a></li>
+          <li><a href="about.html#resume">Resume</a></li>
+        </ul>
+      </li>
+      <li><a href="project.html">Project</a></li>
+      <li class="dropdown">
+        <a href="career.html">Career</a>
+        <ul class="dropdown-menu">
+          <li><a href="career.html#job1">ITSD Systems Technician</a></li>
+          <li><a href="career.html#job2">California R1 Internship</a></li>
+          <li><a href="career.html#job3">C&R Market</a></li>
+        </ul>
+      </li>
+      <li><a href="reflection.html">Reflection</a></li>
+      <li><a href="contact.html" class="active">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="herotitle">
+    <h1>Contact Me</h1>
+  </section>
+
+  <main>
+
+    <form class="contact-form">
+
+      <label for="title">Title</label>
+      <select id="title" name="title" required>
+        <option value="" disabled selected>Select your title</option>
+        <option>Mr.</option>
+        <option>Ms.</option>
+        <option>Mrs.</option>
+        <option>Dr.</option>
+      </select>
+
+      <label for="fname">First Name</label>
+      <input type="text" id="fname" name="fname" placeholder="Enter your first name" required>
+
+      <label for="lname">Last Name</label>
+      <input type="text" id="lname" name="lname" placeholder="Enter your last name" required>
+
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+      <label for="message">Message</label>
+      <textarea id="message" name="message" placeholder="Enter your message" required></textarea>
+
+      <fieldset class="contact-options">
+        <legend>Select Your Reason</legend>
+
+        <label>
+          <input type="checkbox" name="reason" value="question">
+          Question
+        </label>
+
+        <label>
+          <input type="checkbox" name="reason" value="suggestion">
+          Suggestion
+        </label>
+
+        <label>
+          <input type="checkbox" name="reason" value="other">
+          Other
+        </label>
+      </fieldset>
+
+      <button type="submit" class="herobutton">Submit</button>
+
+    </form>
+
+  </main>
+
+  <footer>
+    <p class="contact-item">
+      <img src="images/phone.png" alt="Phone icon" class="icon">
+      555-123-4567
+    </p>
+    <p class="contact-item">
+      <img src="images/email.png" alt="Email icon" class="icon">
+      LLDTR@umsystem.edu
+    </p>
+    <p>Landen Lipskoch 4/19/2026</p>
+  </footer>
+</body>
+</html>
