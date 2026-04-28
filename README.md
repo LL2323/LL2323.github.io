@@ -1,6 +1,6 @@
 # Build Break Repeat - Infrastructure Foundation
 
-A tool for deploying and managing a CTF competition environment on a single Linux host using Docker.
+A tool for deploying and managing a CTF competition environment on a single Linux host using Docker and Terraform.
 
 ## Requirements
 - Linux (CentOS/Ubuntu recommended)
