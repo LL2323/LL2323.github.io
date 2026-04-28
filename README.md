@@ -11,6 +11,15 @@ A tool for deploying and managing a CTF competition environment on a single Linu
 - Wget
 - Python 3
 
+Installing the basics:
+
+```bash
+sudo apt update
+sudo apt install -y git curl wget python3
+```
+
+For Docker and Terraform, see [Commands.txt](Commands.txt).
+
 ## Setup
 
 ```bash
