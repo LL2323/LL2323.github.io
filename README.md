@@ -18,8 +18,6 @@ sudo apt update
 sudo apt install -y git curl wget python3
 ```
 
-For Docker and Terraform, see [Commands.txt](Commands.txt).
-
 ## Setup
 
 ```bash
@@ -27,8 +25,6 @@ git clone https://github.com/Build-Break-Repeat/CTF_Framework.git
 cd CTF_Framework
 bash init.sh
 ```
-
-`init.sh` downloads the `ctfctl` binary and configures git hooks.
 
 ## Usage
 
