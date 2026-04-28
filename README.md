@@ -30,13 +30,16 @@ bash init.sh
 ## Usage
 
 ```bash
-
 # Enter Sudo for Administrator Privilege
 sudo su
 
-# Deploy CTFCTL
+# Deploy CTFCTL and Follow on Screen Prompts
 ./ctfctl deploy
+```
 
+## Additional Usage Commands
+
+```bash
 # Check running containers and their URLs
 ./ctfctl status
 
