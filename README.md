@@ -1,6 +1,6 @@
 # Build Break Repeat - Infrastructure Foundation
 
-A tool for deploying and managing a CTF competition environment on a single Linux host using Docker and Terraform.
+Your go to tool for deploying and managing a CTF based competition environment.
 
 `ctfctl` handles the full lifecycle of a CTF event — it spins up the CTFd scoreboard, deploys vulnerable challenge containers, generates and injects unique flags per team, and configures the firewall, all from a single command. When the event is over, it tears everything down just as easily.
 
