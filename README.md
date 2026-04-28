@@ -75,7 +75,3 @@ Flags are generated per team and injected automatically during `deploy`. To run 
 ./ctfctl flags generate
 ./ctfctl flags inject
 ```
-
-## Challenge Ports
-
-See [Documentation.txt](Documentation.txt) for the full list of challenges and their ports.
