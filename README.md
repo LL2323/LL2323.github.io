@@ -34,7 +34,7 @@ bash init.sh
 # Enter Sudo for Administrator Privilege
 sudo su
 
-# Deploy everything (CTFd, challenges, flags, firewall)
+# Deploy CTFCTL
 ./ctfctl deploy
 
 # Check running containers and their URLs
