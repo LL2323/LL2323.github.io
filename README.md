@@ -27,7 +27,7 @@ cd CTF_Framework
 bash init.sh
 ```
 
-## Usage
+## Usage/Deployment
 
 ```bash
 # Enter Sudo for Administrator Privilege
@@ -46,13 +46,13 @@ sudo su
 # Tear everything down
 ./ctfctl destroy
 
-# Destroy then redeploy in one command
+# Destroy then redeploy
 ./ctfctl rebuild
 ```
 
 ## Configuration
 
-Challenges and event settings are managed through `config.json`. Use the CLI to edit instead of touching the file directly:
+Challenges and event settings are managed through `config.json`. Use the CLI to edit instead of editing the file directly:
 
 ```bash
 # Add, edit, remove, or list challenges
@@ -60,8 +60,11 @@ Challenges and event settings are managed through `config.json`. Use the CLI to 
 ./ctfctl challenge list
 ./ctfctl challenge edit
 
-# Set event name, team count, admin credentials
-./ctfctl event configure
+# View event settings
+./ctfctl event show
+
+# Edit event name, team count, admin credentials
+./ctfctl event edit
 ```
 
 ## Flags
