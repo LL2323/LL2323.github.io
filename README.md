@@ -15,7 +15,8 @@ Installing the basics:
 
 ```bash
 sudo apt update
-sudo apt install -y git curl wget python3
+sudo apt install git -y
+sudo apt install curl -y
 ```
 
 ## Setup
@@ -29,6 +30,10 @@ bash init.sh
 ## Usage
 
 ```bash
+
+# Enter Sudo for Administrator Privilege
+sudo su
+
 # Deploy everything (CTFd, challenges, flags, firewall)
 ./ctfctl deploy
 
