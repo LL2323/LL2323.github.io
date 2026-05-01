@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Roboto&display=swap');
 
+/* Custom font from Google Fonts applied to site */
 body {
   background-color: #193367;
   margin: 0;
@@ -360,4 +361,19 @@ footer {
   .career-table td {
     padding: 8px;
   }
+}
+
+/* Custom styles for all <h1> and <h2> elements */
+h1, h2 {
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.25);
+}
+
+.icon {
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.icon:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 10px white);
 }
